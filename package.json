@@ -1,0 +1,45 @@
+{
+  "name": "angular-material-spotight",
+  "version": "0.0.1",
+  "description": "Add a Spotlight Tour to your Angular Material projects.",
+  "main": "index",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ilovett/angular-material-spotlight"
+  },
+  "keywords": [
+    "material",
+    "design",
+    "angular",
+    "spotlight",
+    "tour",
+    "intro",
+    "tutorial"
+  ],
+  "author": "Ian Lovett <i.c.lovett@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ilovett/angular-material-spotlight/issues"
+  },
+  "homepage": "https://github.com/ilovett/angular-material-spotlight",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.22.0",
+    "babelify": "^7.3.0",
+    "browserify": "^14.0.0",
+    "gulp": "^3.9.1",
+    "gulp-check-filesize": "^2.0.1",
+    "gulp-notify": "^3.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.4.0",
+    "gulp-uglify": "^2.0.1",
+    "gulp-util": "^3.0.8",
+    "require-dir": "^0.3.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.9.0"
+  }
+}

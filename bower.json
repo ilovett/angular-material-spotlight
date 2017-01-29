@@ -1,0 +1,37 @@
+{
+  "name": "angular-material-spotlight",
+  "version": "0.0.1",
+  "homepage": "https://github.com/ilovett/angular-material-spotlight",
+  "authors": [
+    "Ian Lovett <i.c.lovett@gmail.com>"
+  ],
+  "description": "Add a Spotlight Tour to your Angular Material projects.",
+  "main": [
+    "dist/md-spotlight.js",
+    "dist/md-spotlight.css"
+  ],
+  "keywords": [
+    "material",
+    "design",
+    "angular",
+    "spotlight",
+    "tour",
+    "intro",
+    "tutorial"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.5.0",
+    "angular-material": "~1.1.0"
+  },
+  "resolutions": {
+    "angular": "~1.5.0"
+  }
+}
