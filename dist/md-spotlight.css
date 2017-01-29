@@ -1,0 +1,3 @@
+.md-spotlight-is-showing md-toolbar{z-index:initial}.md-spotlight-is-showing md-backdrop.md-opaque{opacity:.85}[md-spotlight].md-spotlight-shining{position:relative;z-index:89}.md-spotlight-spotlight{position:fixed;background:rgba(255,255,255,0.55);z-index:88}.md-spotlight-spotlight._md-transition-in{opacity:1;transition:all .4s cubic-bezier(0.25, 0.8, 0.25, 1);transform:translate(0, 0) scale(1)}.md-spotlight-spotlight._md-transition-out{opacity:0;transition:all .4s cubic-bezier(0.25, 0.8, 0.25, 1);transform:translate(0, 100%) scale(0.2)}
+
+/*# sourceMappingURL=md-spotlight.css.map */
