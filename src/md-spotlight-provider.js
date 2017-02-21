@@ -14,14 +14,11 @@ function MdSpotlightProvider($$interimElementProvider) {
     .setDefaults({
       methods: [
         'disableParentScroll',
-        'hasBackdrop',
-        // 'clickOutsideToClose',
-        'escapeToClose',
         'targetEvent',
         'closeTo',
         'openFrom',
-        'parent',
-        'fullscreen'
+        'focusOnOpen',
+        'parent'
       ],
       options: dialogDefaultOptions
     });
@@ -29,20 +26,16 @@ function MdSpotlightProvider($$interimElementProvider) {
   /* @ngInject */
   function dialogDefaultOptions($mdSpotlight, $mdAria, $mdUtil, $mdConstant, $animate, $document, $window, $rootScope, $timeout, $rootElement, $log, $injector, $q) {
     return {
-      hasBackdrop: true,
       isolateScope: true,
       onShow: onShow,
       onShowing: beforeShow,
       onRemove: onRemove,
-      // clickOutsideToClose: true,
       escapeToClose: true,
       targetEvent: null,
       closeTo: null,
       openFrom: null,
-      // focusOnOpen: true,
+      focusOnOpen: false,
       disableParentScroll: false,
-      autoWrap: true,
-      fullscreen: false,
       transformTemplate: function(template, options) {
         return '<div class="md-spotlight-spotlight md-whiteframe-z1"></div>';
       }
@@ -111,13 +104,16 @@ function MdSpotlightProvider($$interimElementProvider) {
          * If we find no actions at all, log a warning to the console.
          */
         function findNextButton() {
+
           // TODO replace logic
-          var closeButton = element[0].querySelector('.dialog-close');
-          if (!closeButton) {
-            var actionButtons = element[0].querySelectorAll('.md-actions button, md-dialog-actions button');
-            closeButton = actionButtons[actionButtons.length - 1];
-          }
-          return angular.element(closeButton);
+          return;
+
+          // var closeButton = element[0].querySelector('.dialog-close');
+          // if (!closeButton) {
+          //   var actionButtons = element[0].querySelectorAll('.md-actions button, md-dialog-actions button');
+          //   closeButton = actionButtons[actionButtons.length - 1];
+          // }
+          // return angular.element(closeButton);
         }
       }
     }
@@ -284,41 +280,6 @@ function MdSpotlightProvider($$interimElementProvider) {
         window.off('resize', onWindowResize);
       });
 
-      if (options.clickOutsideToClose) {
-
-        var target = options.backdrop;
-        var sourceElem;
-
-        // Keep track of the element on which the mouse originally went down
-        // so that we can only close the backdrop when the 'click' started on it.
-        // A simple 'click' handler does not work,
-        // it sets the target object as the element the mouse went down on.
-        var mousedownHandler = function(ev) {
-          sourceElem = ev.target;
-        };
-
-        // We check if our original element and the target is the backdrop
-        // because if the original was the backdrop and the target was inside the dialog
-        // we don't want to dialog to close.
-        var mouseupHandler = function(ev) {
-          if (sourceElem === target[0] && ev.target === target[0]) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            endSpotlight(options);
-          }
-        };
-
-        // Add listeners
-        target.on('mousedown', mousedownHandler);
-        target.on('mouseup', mouseupHandler);
-
-        // Queue remove listeners function
-        removeListeners.push(function() {
-          target.off('mousedown', mousedownHandler);
-          target.off('mouseup', mouseupHandler);
-        });
-      }
-
       // Attach specific `remove` listener handler
       options.deactivateListeners = function() {
         removeListeners.forEach(function(removeFn) {
@@ -339,10 +300,10 @@ function MdSpotlightProvider($$interimElementProvider) {
         options.restoreScroll = $mdUtil.disableScrollAround(element, options.parent);
       }
 
-      if (options.hasBackdrop) {
+      // if (options.hasBackdrop) {
         options.backdrop = $mdUtil.createBackdrop(scope, "_md-dialog-backdrop md-opaque");
         $animate.enter(options.backdrop, options.parent);
-      }
+      // }
 
       /**
        * Hide modal backdrop element...
@@ -543,10 +504,6 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       var from = animator.toTransformCss(buildTranslateToOrigin(spotlightEl, options.openFrom || options.origin));
       var to = animator.toTransformCss("");  // defaults to center display (or parent or $rootElement)
-
-      // if (options.fullscreen) {
-      //   dialogEl.addClass('md-dialog-fullscreen');
-      // }
 
       console.log('from', from);
       console.log('to', to);
