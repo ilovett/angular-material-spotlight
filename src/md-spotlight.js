@@ -19,7 +19,7 @@ angular
  */
 function MdSpotlightDirective($$rAF, $mdTheming, $mdSpotlight) {
   return {
-    restrict: 'E',
+    restrict: 'EA',
     link: function(scope, element) {
       // TODO logic pertinent to the `md-spotlight` dom element should eventually live here
     }
@@ -149,6 +149,9 @@ function MdSpotlightProvider($$interimElementProvider) {
      */
     function onRemove(scope, element, options) {
 
+      console.log('onRemove');
+
+
       // options.deactivateListeners();
       options.unlockScreenReader();
       options.hideBackdrop(options.$destroy);
@@ -250,9 +253,12 @@ function MdSpotlightProvider($$interimElementProvider) {
      */
     function activateListeners(element, options) {
 
+      console.log('activate listeners');
+
       var window = angular.element($window);
       var onWindowResize = $mdUtil.debounce(function(){
         // TODO move spotlight to calculated container offset (stay at same index)
+        console.log('TODO onWindowResize');
       }, 60);
 
       var removeListeners = [];
@@ -494,6 +500,9 @@ function MdSpotlightProvider($$interimElementProvider) {
 
     function moveSpotlightToNextSpotlightItem(spotlightEl, options, direction) {
 
+      console.log('moveSpotlightToNextSpotlightItem');
+      console.log('spotlightEl', spotlightEl);
+
       var nextSpotlightItem;
 
       if (currentSpotlightItem) {
@@ -529,6 +538,7 @@ function MdSpotlightProvider($$interimElementProvider) {
       var buildTranslateToOrigin = animator.calculateZoomToOrigin;
       var translateOptions = {transitionInClass: '_md-transition-in', transitionOutClass: '_md-transition-out'};
 
+
       var endPoint = getBoundingClientRect(nextSpotlightItem);
 
       // TODO remove spotlight class from currentSpotlightItem
@@ -559,6 +569,9 @@ function MdSpotlightProvider($$interimElementProvider) {
       // if (options.fullscreen) {
       //   dialogEl.addClass('md-dialog-fullscreen');
       // }
+
+      console.log('from', from);
+      console.log('to', to);
 
       currentSpotlightItem = nextSpotlightItem;
 
@@ -617,6 +630,7 @@ function MdSpotlightProvider($$interimElementProvider) {
 
         options.deactivateListeners();
 
+        console.log('removed spotlightEl from dom');
         if (currentSpotlightItem) {
           currentSpotlightItem.removeClass('md-spotlight-shining');
         }
@@ -628,8 +642,11 @@ function MdSpotlightProvider($$interimElementProvider) {
     // TODO rename spotlightEl to spotlight?
     function setupSpotlight(spotlightEl, options) {
 
+      console.log('setupSpotlight', spotlightEl, options);
+
       // add the `.md-spotlight-spotlight` to the DOM
       options.parent.append(spotlightEl);
+      console.log('added spotlightEl to dom');
 
       options.spotlightEl = spotlightEl;
     }
