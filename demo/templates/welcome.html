@@ -1,0 +1,88 @@
+<md-toolbar>
+  <div class="md-toolbar-tools">
+
+    <h3>Welcome</h3>
+
+    <span class="flex"></span>
+
+    <md-button class="md-icon-button no-margin" aria-label="Search" style="margin-left: 0;"
+      md-spotlight="help"
+      md-spotlight-index="1"
+      >
+      <md-icon>search</md-icon>
+    </md-button>
+
+    <md-menu md-position-mode="target-right target">
+
+      <md-button class="md-icon-button no-margin" aria-label="Menu" ng-click="$mdOpenMenu($event)"
+        md-spotlight="help"
+        md-spotlight-index="2"
+        >
+        <md-icon>more_vert</md-icon>
+      </md-button>
+
+      <md-menu-content width="4">
+        <md-menu-item>
+          <md-button>
+            <md-icon>check</md-icon> Das Ist Good
+          </md-button>
+        </md-menu-item>
+        <md-menu-item>
+          <md-button>
+            <md-icon>filter_list</md-icon> Filters
+          </md-button>
+        </md-menu-item>
+        <md-menu-item>
+          <md-button>
+            <md-icon>add</md-icon> Create
+          </md-button>
+        </md-menu-item>
+        <md-menu-item>
+          <md-button>
+            <md-icon>delete_forever</md-icon> Delete
+          </md-button>
+        </md-menu-item>
+        <md-menu-item>
+          <md-button ng-click="$ctrl.tour('help', $event)">
+            <md-icon>help</md-icon> Help
+          </md-button>
+        </md-menu-item>
+      </md-menu-content>
+
+    </md-menu>
+
+  </div>
+</md-toolbar>
+
+<md-content class="flex layout-column layout-align-space-around-center">
+
+  <div class="layout-row layout-align-space-around-center" style="width: 100%;">
+
+    <md-icon md-spotlight="random-set-two" md-spotlight-index="3">feedback</md-icon>
+
+    <md-icon md-spotlight="random-set-one" md-spotlight-index="2">grade</md-icon>
+
+    <md-icon md-spotlight="random-set-two" md-spotlight-index="1">favorite</md-icon>
+
+    <md-icon md-spotlight="random-set-one" md-spotlight-index="4">g_translate</md-icon>
+
+  </div>
+
+  <div style="text-align: center;">
+    <md-button class="md-raised md-primary" ng-click="$ctrl.tour('random-set-one', $event)">Spotlight Tour One</md-button>
+    <md-button class="md-raised md-accent" ng-click="$ctrl.tour('random-set-two', $event)">Spotlight Tour Two</md-button>
+  </div>
+
+  <div class="layout-row layout-align-space-around-center" style="width: 100%;">
+
+    <md-icon md-spotlight="random-set-two" md-spotlight-index="2">feedback</md-icon>
+
+    <md-icon md-spotlight="random-set-one" md-spotlight-index="1">grade</md-icon>
+
+    <md-icon md-spotlight="random-set-two" md-spotlight-index="4">favorite</md-icon>
+
+    <md-icon md-spotlight="random-set-one" md-spotlight-index="3">g_translate</md-icon>
+
+  </div>
+
+</md-content>
