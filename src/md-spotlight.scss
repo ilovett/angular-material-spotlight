@@ -36,3 +36,11 @@
   z-index: 88;
 
 }
+
+md-spotlight-tip {
+  display: none;
+}
+
+md-spotlight-tip-container md-spotlight-tip {
+  display: block;
+}

@@ -8,7 +8,7 @@
 function MdSpotlightDirective($$rAF, $mdTheming, $mdSpotlight) {
   return {
     restrict: 'EA',
-    link: function(scope, element) {
+    link: function(scope, element, attrs) {
       // TODO logic pertinent to the `md-spotlight` dom element should eventually live here
     }
   };
