@@ -39,7 +39,7 @@ function MdSpotlightProvider($$interimElementProvider) {
   });
 
   /* @ngInject */
-  function dialogDefaultOptions($mdSpotlight, $mdAria, $mdUtil, $mdConstant, $animate, $document, $window, $rootScope, $timeout, $rootElement, $log, $injector, $q) {
+  function dialogDefaultOptions($mdSpotlight, $mdAria, $mdUtil, $mdConstant, $animate, $compile, $document, $window, $rootScope, $timeout, $rootElement, $log, $injector, $q) {
 
     return {
       isolateScope: true,
@@ -125,10 +125,8 @@ function MdSpotlightProvider($$interimElementProvider) {
         options.restoreScroll = $mdUtil.disableScrollAround(element, options.parent);
       }
 
-      // if (options.hasBackdrop) {
       options.backdrop = $mdUtil.createBackdrop(scope, "md-spotlight-backdrop md-opaque");
       $animate.enter(options.backdrop, options.parent);
-      // }
 
       /**
        * Hide modal backdrop element...
@@ -222,7 +220,9 @@ function MdSpotlightProvider($$interimElementProvider) {
     // MODIFIED CODE BELOW
     var currentTarget = void 0,
         nextTarget = void 0,
-        spotlightEl = void 0;
+        spotlightEl = void 0,
+        spotlightTipContainerEl = void 0,
+        spotlightTipContainerParentEl = void 0;
 
     /** Show method for dialogs */
     function onShow(scope, element, options, controller) {
@@ -252,26 +252,61 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       options.deactivateListeners();
 
-      // TODO animate removing the backdrop?
+      // TODO animate out toward origin
+      spotlightTipContainerEl && $animate.leave(spotlightTipContainerEl);
+
+      // TODO animate backdrop and transform at same time
       options.hideBackdrop(options.$destroy);
 
       return options.reverseAnimate().then(function () {
+
+        // reset targets
         currentTarget = null;
         nextTarget = null;
-        // spotlightEl.remove();
+
+        // remove the spotlight element
+        spotlightEl && spotlightEl.remove();
       });
     }
 
-    function setupSpotlight(spotlightEl, options) {
+    function setupSpotlight(element, options) {
 
       // tell the entire html body that spotlight is showing for css overrides
       angular.element($document[0].body).addClass('md-spotlight-is-showing');
 
+      // save reference to the new spotlightElement
+      spotlightEl = element;
+
       // add the spotlight to the DOM
       options.parent.append(spotlightEl);
 
-      // save reference to the new spotlightElement
-      spotlightEl = spotlightEl;
+      // We'll create a new scope to use as the context for the view.
+      var $scope = $rootScope.$new();
+
+      $scope.prev = function () {
+        nextTarget = getSpotlightTarget(options.group, 'prev');
+        moveSpotlightToNextTarget(spotlightEl, options);
+      };
+
+      $scope.skip = function () {
+        endSpotlight(options);
+      };
+
+      $scope.next = function () {
+        nextTarget = getSpotlightTarget(options.group, 'next');
+        moveSpotlightToNextTarget(spotlightEl, options);
+      };
+
+      // create and add the tooltip container
+      var html = '\n        <div class="md-spotlight-tip-container layout-column">\n          <div id="md-spotlight-tip-parent" class="flex layout-column layout-align-center-center"></div>\n          <div id="md-spotlight-tip-actions" class="layout-row layout-align-space-between-center" style="width: 100%; max-width: 600px; margin: 0 auto;">\n            <md-button ng-click="prev()">Prev</md-button>\n            <md-button ng-click="skip()">Skip</md-button>\n            <md-button ng-click="next()">Next</md-button>\n          </div>\n        </div>\n      ';
+
+      spotlightTipContainerEl = $compile(html)($scope);
+
+      // save references to important nodes
+      spotlightTipContainerParentEl = angular.element(spotlightTipContainerEl.find('div')[0]);
+
+      // TODO animate from origin
+      $animate.enter(spotlightTipContainerEl, options.parent);
     }
 
     function getSpotlightTarget(group, direction) {
@@ -327,6 +362,22 @@ function MdSpotlightProvider($$interimElementProvider) {
       });
 
       currentTarget = nextTarget;
+
+      showSpotlightTips(options);
+    }
+
+    function showSpotlightTips(options) {
+
+      var backdrop = options.backdrop;
+      var childTip = currentTarget.find('md-spotlight-tip');
+
+      // always clear the content
+      spotlightTipContainerParentEl.html('');
+
+      // if we have a tip to show relevant to the showing tip, show it
+      if (childTip.length) {
+        spotlightTipContainerParentEl.append(childTip.clone());
+      }
     }
 
     function animateFromOrigin(spotlightEl, options) {
@@ -337,11 +388,6 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       var from = animator.toTransformCss(buildTranslateToOrigin(spotlightEl, options.openFrom || options.origin));
       var to = animator.toTransformCss(""); // defaults to center display (or parent or $rootElement)
-
-      console.log('from', from);
-      console.log('to', to);
-
-      currentTarget = nextTarget;
 
       // TODO save animation promise to cancel?
 
@@ -377,12 +423,9 @@ function MdSpotlightProvider($$interimElementProvider) {
      */
     function activateListeners(element, options) {
 
-      console.log('activate listeners');
-
       var window = angular.element($window);
       var onWindowResize = $mdUtil.debounce(function () {
         // TODO move spotlight to calculated container offset (stay at same index)
-        console.log('TODO onWindowResize');
       }, 60);
 
       var removeListeners = [];

@@ -12,17 +12,16 @@
 
 md-backdrop.md-spotlight-backdrop.md-opaque {
 
-  opacity: .69;
+  opacity: .92;
 
   &.ng-enter {
     opacity: 0;
   }
   &.ng-enter.md-opaque.ng-enter-active {
-    opacity: .69;
+    opacity: .92;
   }
   &.ng-leave {
-    opacity: .69;
-    // transition: opacity 400ms;
+    opacity: .92;
   }
   &.ng-leave.md-opaque.ng-leave-active {
     opacity: 0;
@@ -37,6 +36,10 @@ md-backdrop.md-spotlight-backdrop.md-opaque {
 
 .md-spotlight-spotlight {
 
+  position: fixed;
+  background: inherit;
+  z-index: 88;
+
   &.md-transition-in {
     opacity: 1;
     transition: $swift-ease-out;
@@ -45,12 +48,8 @@ md-backdrop.md-spotlight-backdrop.md-opaque {
   &.md-transition-out {
     opacity: 0;
     transition: $swift-ease-out;
-    transform: translate(0,0) scale(0);
+    transform: translate(0,100%) scale(0);
   }
-
-  position: fixed;
-  background: rgba(255,255,255,0.55);
-  z-index: 88;
 
 }
 
@@ -58,6 +57,35 @@ md-spotlight-tip {
   display: none;
 }
 
-md-spotlight-tip-container md-spotlight-tip {
-  display: block;
+.md-spotlight-tip-container {
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  z-index: 88;
+
+  color: white;
+
+  md-spotlight-tip {
+    display: block;
+  }
+
+  transition: $swift-ease-out;
+
+  &.ng-enter {
+    color: 0;
+  }
+  &.ng-enter.ng-enter-active {
+    color: 1;
+  }
+  &.ng-leave {
+    opacity: 1;
+  }
+  &.ng-leave.ng-leave-active {
+    opacity: 0;
+  }
+
 }
