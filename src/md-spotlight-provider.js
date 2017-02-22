@@ -114,7 +114,7 @@ function MdSpotlightProvider($$interimElementProvider) {
       }
 
       // if (options.hasBackdrop) {
-        options.backdrop = $mdUtil.createBackdrop(scope, "_md-dialog-backdrop md-opaque");
+        options.backdrop = $mdUtil.createBackdrop(scope, "md-spotlight-backdrop md-opaque");
         $animate.enter(options.backdrop, options.parent);
       // }
 
@@ -122,9 +122,14 @@ function MdSpotlightProvider($$interimElementProvider) {
        * Hide modal backdrop element...
        */
       options.hideBackdrop = function hideBackdrop($destroy) {
+
         if (options.backdrop) {
-          if ( !!$destroy ) options.backdrop.remove();
-          else              $animate.leave(options.backdrop);
+          if ( !!$destroy ) {
+            options.backdrop.remove();
+          }
+          else {
+            $animate.leave(options.backdrop)
+          }
         }
 
         if (options.disableParentScroll) {
@@ -259,7 +264,8 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       return options.reverseAnimate().then(function() {
         currentTarget = null;
-        spotlightEl.remove();
+        nextTarget = null;
+        // spotlightEl.remove();
       });
 
     }
@@ -337,11 +343,9 @@ function MdSpotlightProvider($$interimElementProvider) {
 
     function animateFromOrigin(spotlightEl, options) {
 
-
-      debugger;
       var animator = $mdUtil.dom.animator;
       var buildTranslateToOrigin = animator.calculateZoomToOrigin;
-      var translateOptions = {transitionInClass: '_md-transition-in', transitionOutClass: '_md-transition-out'};
+      var translateOptions = {transitionInClass: 'md-transition-in', transitionOutClass: 'md-transition-out'};
 
       var from = animator.toTransformCss(buildTranslateToOrigin(spotlightEl, options.openFrom || options.origin));
       var to = animator.toTransformCss("");  // defaults to center display (or parent or $rootElement)
@@ -362,13 +366,12 @@ function MdSpotlightProvider($$interimElementProvider) {
           options.reverseAnimate = function() {
 
             // TODO fix closing to 0,0
-            debugger;
 
             delete options.reverseAnimate;
 
             if (options.closeTo) {
               // Using the opposite classes to create a close animation to the closeTo element
-              translateOptions = {transitionInClass: '_md-transition-out', transitionOutClass: '_md-transition-in'};
+              translateOptions = {transitionInClass: 'md-transition-out', transitionOutClass: 'md-transition-in'};
               from = to;
               to = animator.toTransformCss(buildTranslateToOrigin(currentTarget, options.closeTo));
 
@@ -376,13 +379,7 @@ function MdSpotlightProvider($$interimElementProvider) {
                 .translate3d(currentTarget, from, to, translateOptions);
             }
 
-            return animateReversal(
-              animator.toTransformCss(
-                // in case the origin element has moved or is hidden,
-                // let's recalculate the translateCSS
-                buildTranslateToOrigin(currentTarget, options.origin)
-              )
-            );
+            return animateReversal(animator.toTransformCss(buildTranslateToOrigin(currentTarget, options.origin)));
 
           };
           return true;
@@ -474,8 +471,8 @@ function MdSpotlightProvider($$interimElementProvider) {
      * Remove function for all dialogs
      */
     function onRemove(scope, element, options) {
-      // TODO copy from dialog
-      // options.hideBackdrop(options.$destroy);
+
+      options.hideBackdrop && options.hideBackdrop(options.$destroy);
 
       // Remove the focus traps that we added earlier for keeping focus within the dialog.
       if (topFocusTrap && topFocusTrap.parentNode) {

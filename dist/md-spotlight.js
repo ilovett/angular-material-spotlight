@@ -2,25 +2,26 @@
 'use strict';
 
 /**
- * @ngdoc module
- * @name material.spotlight
- */
-
-angular.module('md.spotlight', ['material.core', 'material.components.backdrop']).directive('mdSpotlight', MdSpotlightDirective).provider('$mdSpotlight', MdSpotlightProvider);
-
-/**
  * @ngdoc directive
  * @name mdSpotlight
  * @module md.spotlight
  */
+
 function MdSpotlightDirective($$rAF, $mdTheming, $mdSpotlight) {
   return {
     restrict: 'EA',
-    link: function link(scope, element) {
+    link: function link(scope, element, attrs) {
       // TODO logic pertinent to the `md-spotlight` dom element should eventually live here
     }
   };
 }
+
+module.exports = MdSpotlightDirective;
+
+},{}],2:[function(require,module,exports){
+'use strict';
+
+var PADDING = 5;
 
 /**
  * @ngdoc service
@@ -33,142 +34,26 @@ function MdSpotlightProvider($$interimElementProvider) {
   var topFocusTrap, bottomFocusTrap;
 
   return $$interimElementProvider('$mdSpotlight').setDefaults({
-    methods: ['disableParentScroll', 'hasBackdrop', 'clickOutsideToClose', 'escapeToClose', 'targetEvent', 'closeTo', 'openFrom', 'parent', 'fullscreen'],
+    methods: ['disableParentScroll', 'targetEvent', 'closeTo', 'openFrom', 'focusOnOpen', 'parent'],
     options: dialogDefaultOptions
   });
 
   /* @ngInject */
   function dialogDefaultOptions($mdSpotlight, $mdAria, $mdUtil, $mdConstant, $animate, $document, $window, $rootScope, $timeout, $rootElement, $log, $injector, $q) {
+
     return {
-      hasBackdrop: true,
       isolateScope: true,
       onShow: onShow,
-      onShowing: beforeShow,
       onRemove: onRemove,
-      clickOutsideToClose: true,
-      escapeToClose: true,
       targetEvent: null,
       closeTo: null,
       openFrom: null,
-      // focusOnOpen: true,
+      focusOnOpen: false,
       disableParentScroll: false,
-      autoWrap: true,
-      fullscreen: false,
       transformTemplate: function transformTemplate(template, options) {
         return '<div class="md-spotlight-spotlight md-whiteframe-z1"></div>';
       }
     };
-
-    function beforeShow(scope, element, options, controller) {}
-    // if (controller) {
-    //   controller.mdHtmlContent = controller.htmlContent || options.htmlContent || '';
-    //   controller.mdTextContent = controller.textContent || options.textContent ||
-    //       controller.content || options.content || '';
-
-    //   if (controller.mdHtmlContent && !$injector.has('$sanitize')) {
-    //     throw Error('The ngSanitize module must be loaded in order to use htmlContent.');
-    //   }
-
-    //   if (controller.mdHtmlContent && controller.mdTextContent) {
-    //     throw Error('md-dialog cannot have both `htmlContent` and `textContent`');
-    //   }
-    // }
-
-
-    /** Show method for dialogs */
-    function onShow(scope, element, options, controller) {
-
-      // TODO replace with md-spotlight-is-showing
-      angular.element($document[0].body).addClass('md-spotlight-is-showing');
-
-      captureParentAndFromToElements(options);
-
-      // TODO aria bullshit
-      // configureAria(element.find('md-dialog'), options);
-
-      showBackdrop(scope, element, options);
-
-      setupSpotlight(element, options);
-
-      activateListeners(element, options);
-
-      return moveSpotlightToNextSpotlightItem(element, options).then(function () {
-
-        // TODO perhaps here should be where highlight index goes
-
-        lockScreenReader(element, options);
-        focusOnOpen();
-      });
-
-      /**
-       * For alerts, focus on content... otherwise focus on
-       * the close button (or equivalent)
-       */
-      function focusOnOpen() {
-        if (options.focusOnOpen) {
-          var target = $mdUtil.findFocusTarget(element) || findCloseButton();
-          target.focus();
-        }
-
-        /**
-         * If no element with class dialog-close, try to find the last
-         * button child in md-actions and assume it is a close button.
-         *
-         * If we find no actions at all, log a warning to the console.
-         */
-        function findCloseButton() {
-          var closeButton = element[0].querySelector('.dialog-close');
-          if (!closeButton) {
-            var actionButtons = element[0].querySelectorAll('.md-actions button, md-dialog-actions button');
-            closeButton = actionButtons[actionButtons.length - 1];
-          }
-          return angular.element(closeButton);
-        }
-      }
-    }
-
-    /**
-     * Remove function for all dialogs
-     */
-    function onRemove(scope, element, options) {
-
-      console.log('onRemove');
-
-      // options.deactivateListeners();
-      options.unlockScreenReader();
-      options.hideBackdrop(options.$destroy);
-
-      // Remove the focus traps that we added earlier for keeping focus within the dialog.
-      if (topFocusTrap && topFocusTrap.parentNode) {
-        topFocusTrap.parentNode.removeChild(topFocusTrap);
-      }
-
-      if (bottomFocusTrap && bottomFocusTrap.parentNode) {
-        bottomFocusTrap.parentNode.removeChild(bottomFocusTrap);
-      }
-
-      // For navigation $destroy events, do a quick, non-animated removal,
-      // but for normal closes (from clicks, etc) animate the removal
-      return !!options.$destroy ? detachAndClean() : animateRemoval().then(detachAndClean);
-
-      /**
-       * For normal closes, animate the removal.
-       * For forced closes (like $destroy events), skip the animations
-       */
-      function animateRemoval() {
-        return dialogPopOut(element, options);
-      }
-
-      /**
-       * Detach the element
-       */
-      function detachAndClean() {
-        angular.element($document[0].body).removeClass('md-spotlight-is-showing');
-        element.remove();
-
-        if (!options.$destroy) options.origin.focus();
-      }
-    }
 
     /**
      * Identify the bounding RECT for the target element
@@ -230,105 +115,6 @@ function MdSpotlightProvider($$interimElementProvider) {
     }
 
     /**
-     * Listen for escape keys and outside clicks to auto close
-     */
-    function activateListeners(element, options) {
-
-      console.log('activate listeners');
-
-      var window = angular.element($window);
-      var onWindowResize = $mdUtil.debounce(function () {
-        // TODO move spotlight to calculated container offset (stay at same index)
-        console.log('TODO onWindowResize');
-      }, 60);
-
-      var removeListeners = [];
-
-      if (options.escapeToClose) {
-
-        var parentTarget = options.parent;
-        var keyHandlerFn = function keyHandlerFn(ev) {
-
-          if (ev.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            endSpotlight(options);
-          }
-
-          if (ev.keyCode === $mdConstant.KEY_CODE.LEFT_ARROW) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            moveSpotlightToNextSpotlightItem(element, options, 'prev');
-          } else if (ev.keyCode === $mdConstant.KEY_CODE.RIGHT_ARROW) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            moveSpotlightToNextSpotlightItem(element, options);
-          }
-        };
-
-        // Add keydown listeners
-        element.on('keydown', keyHandlerFn);
-        parentTarget.on('keydown', keyHandlerFn);
-
-        // Queue remove listeners function
-        removeListeners.push(function () {
-
-          element.off('keydown', keyHandlerFn);
-          parentTarget.off('keydown', keyHandlerFn);
-        });
-      }
-
-      // Register listener to update dialog on window resize
-      window.on('resize', onWindowResize);
-      removeListeners.push(function () {
-        window.off('resize', onWindowResize);
-      });
-
-      if (options.clickOutsideToClose) {
-
-        var target = options.backdrop;
-        var sourceElem;
-
-        // Keep track of the element on which the mouse originally went down
-        // so that we can only close the backdrop when the 'click' started on it.
-        // A simple 'click' handler does not work,
-        // it sets the target object as the element the mouse went down on.
-        var mousedownHandler = function mousedownHandler(ev) {
-          sourceElem = ev.target;
-        };
-
-        // We check if our original element and the target is the backdrop
-        // because if the original was the backdrop and the target was inside the dialog
-        // we don't want to dialog to close.
-        var mouseupHandler = function mouseupHandler(ev) {
-          if (sourceElem === target[0] && ev.target === target[0]) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            endSpotlight(options);
-          }
-        };
-
-        // Add listeners
-        target.on('mousedown', mousedownHandler);
-        target.on('mouseup', mouseupHandler);
-
-        // Queue remove listeners function
-        removeListeners.push(function () {
-          target.off('mousedown', mousedownHandler);
-          target.off('mouseup', mouseupHandler);
-        });
-      }
-
-      // Attach specific `remove` listener handler
-      options.deactivateListeners = function () {
-        removeListeners.forEach(function (removeFn) {
-          removeFn();
-        });
-        options.deactivateListeners = null;
-      };
-    }
-
-    /**
      * Show modal backdrop element...
      */
     function showBackdrop(scope, element, options) {
@@ -339,17 +125,22 @@ function MdSpotlightProvider($$interimElementProvider) {
         options.restoreScroll = $mdUtil.disableScrollAround(element, options.parent);
       }
 
-      if (options.hasBackdrop) {
-        options.backdrop = $mdUtil.createBackdrop(scope, "_md-dialog-backdrop md-opaque");
-        $animate.enter(options.backdrop, options.parent);
-      }
+      // if (options.hasBackdrop) {
+      options.backdrop = $mdUtil.createBackdrop(scope, "md-spotlight-backdrop md-opaque");
+      $animate.enter(options.backdrop, options.parent);
+      // }
 
       /**
        * Hide modal backdrop element...
        */
       options.hideBackdrop = function hideBackdrop($destroy) {
+
         if (options.backdrop) {
-          if (!!$destroy) options.backdrop.remove();else $animate.leave(options.backdrop);
+          if (!!$destroy) {
+            options.backdrop.remove();
+          } else {
+            $animate.leave(options.backdrop);
+          }
         }
 
         if (options.disableParentScroll) {
@@ -359,59 +150,6 @@ function MdSpotlightProvider($$interimElementProvider) {
 
         options.hideBackdrop = null;
       };
-    }
-
-    /**
-     * Inject ARIA-specific attributes appropriate for Dialogs
-     */
-    function configureAria(element, options) {
-
-      var role = options.$type === 'alert' ? 'alertdialog' : 'dialog';
-      var dialogContent = element.find('md-dialog-content');
-      var dialogContentId = 'dialogContent_' + (element.attr('id') || $mdUtil.nextUid());
-
-      element.attr({
-        'role': role,
-        'tabIndex': '-1'
-      });
-
-      if (dialogContent.length === 0) {
-        dialogContent = element;
-      }
-
-      dialogContent.attr('id', dialogContentId);
-      element.attr('aria-describedby', dialogContentId);
-
-      if (options.ariaLabel) {
-        $mdAria.expect(element, 'aria-label', options.ariaLabel);
-      } else {
-        $mdAria.expectAsync(element, 'aria-label', function () {
-          var words = dialogContent.text().split(/\s+/);
-          if (words.length > 3) words = words.slice(0, 3).concat('...');
-          return words.join(' ');
-        });
-      }
-
-      // Set up elements before and after the dialog content to capture focus and
-      // redirect back into the dialog.
-      topFocusTrap = document.createElement('div');
-      topFocusTrap.classList.add('_md-dialog-focus-trap');
-      topFocusTrap.tabIndex = 0;
-
-      bottomFocusTrap = topFocusTrap.cloneNode(false);
-
-      // When focus is about to move out of the dialog, we want to intercept it and redirect it
-      // back to the dialog element.
-      var focusHandler = function focusHandler() {
-        element.focus();
-      };
-      topFocusTrap.addEventListener('focus', focusHandler);
-      bottomFocusTrap.addEventListener('focus', focusHandler);
-
-      // The top focus trap inserted immeidately before the md-dialog element (as a sibling).
-      // The bottom focus trap is inserted at the very end of the md-dialog element (as a child).
-      element[0].parentNode.insertBefore(topFocusTrap, element[0]);
-      element.after(bottomFocusTrap);
     }
 
     /**
@@ -472,148 +210,6 @@ function MdSpotlightProvider($$interimElementProvider) {
       return container;
     }
 
-    var currentSpotlightItem = null;
-
-    function moveSpotlightToNextSpotlightItem(spotlightEl, options, direction) {
-
-      console.log('moveSpotlightToNextSpotlightItem');
-      console.log('spotlightEl', spotlightEl);
-
-      var nextSpotlightItem;
-
-      if (currentSpotlightItem) {
-        currentSpotlightItem.removeClass('md-spotlight-shining');
-      }
-
-      // query for the "next" thing to highlight -- md-spotlight group="controls" index="1"
-      var groupEls = document.querySelectorAll('[md-spotlight="' + options.group + '"]');
-
-      var groupElsArray = $mdUtil.nodesToArray(groupEls);
-
-      // sort lowest to highest by `md-spotlight-index` attribute
-      groupElsArray.sort(function (a, b) {
-        return a.getAttribute('md-spotlight-index') > b.getAttribute('md-spotlight-index');
-      });
-
-      if (currentSpotlightItem) {
-        var index = groupElsArray.indexOf(currentSpotlightItem[0]) + (direction === 'prev' ? -1 : 1);
-
-        if (index >= groupElsArray.length || index < 0) {
-          return endSpotlight(options);
-        } else {
-          nextSpotlightItem = angular.element(groupElsArray[index]);
-        }
-      } else {
-        nextSpotlightItem = angular.element(groupElsArray[0]);
-      }
-
-      var animator = $mdUtil.dom.animator;
-      var buildTranslateToOrigin = animator.calculateZoomToOrigin;
-      var translateOptions = { transitionInClass: '_md-transition-in', transitionOutClass: '_md-transition-out' };
-
-      var endPoint = getBoundingClientRect(nextSpotlightItem);
-
-      // TODO remove spotlight class from currentSpotlightItem
-      nextSpotlightItem.addClass('md-spotlight-shining');
-
-      var padding = 5;
-
-      spotlightEl.css({
-        top: endPoint.bounds.top - padding + 'px',
-        bottom: endPoint.bounds.bottom + padding + 'px',
-        left: endPoint.bounds.left - padding + 'px',
-        right: endPoint.bounds.right + padding + 'px',
-        height: endPoint.bounds.height + padding + padding + 'px',
-        width: endPoint.bounds.width + padding + padding + 'px'
-      });
-
-      if (currentSpotlightItem) {
-        currentSpotlightItem = nextSpotlightItem;
-        $timeout(function () {
-          $rootScope.spotlightIndex = currentSpotlightItem.attr('md-spotlight-index');
-        });
-        return $q.when(true);
-      }
-
-      var from = animator.toTransformCss(buildTranslateToOrigin(spotlightEl, options.openFrom || options.origin));
-      var to = animator.toTransformCss(""); // defaults to center display (or parent or $rootElement)
-
-      // if (options.fullscreen) {
-      //   dialogEl.addClass('md-dialog-fullscreen');
-      // }
-
-      console.log('from', from);
-      console.log('to', to);
-
-      currentSpotlightItem = nextSpotlightItem;
-
-      $timeout(function () {
-        $rootScope.spotlightIndex = currentSpotlightItem.attr('md-spotlight-index');
-      });
-
-      // TODO save animation promise to cancel?
-
-      return animator.translate3d(spotlightEl, from, to, translateOptions).then(function (animateReversal) {
-
-        // Build a reversal translate function synched to this translation...
-        options.reverseAnimate = function () {
-          delete options.reverseAnimate;
-
-          if (options.closeTo) {
-            // Using the opposite classes to create a close animation to the closeTo element
-            translateOptions = { transitionInClass: '_md-transition-out', transitionOutClass: '_md-transition-in' };
-            from = to;
-            to = animator.toTransformCss(buildTranslateToOrigin(currentSpotlightItem, options.closeTo));
-
-            return animator.translate3d(currentSpotlightItem, from, to, translateOptions);
-          }
-
-          return animateReversal(animator.toTransformCss(
-          // in case the origin element has moved or is hidden,
-          // let's recalculate the translateCSS
-          buildTranslateToOrigin(currentSpotlightItem, options.origin)));
-        };
-        return true;
-      });
-    }
-
-    function endSpotlight(options) {
-
-      // hide on next tick
-      // $mdUtil.nextTick($mdSpotlight.hide, true);
-      // $mdSpotlight.destroy(element);
-
-      $timeout(function () {
-        $rootScope.spotlightIndex = null;
-      });
-
-      options.hideBackdrop(options.$destroy);
-
-      return options.reverseAnimate().then(function () {
-
-        options.deactivateListeners();
-
-        console.log('removed spotlightEl from dom');
-        if (currentSpotlightItem) {
-          currentSpotlightItem.removeClass('md-spotlight-shining');
-        }
-        currentSpotlightItem = undefined;
-        options.spotlightEl.remove();
-      });
-    }
-
-    // TODO rename spotlightEl to spotlight?
-    function setupSpotlight(spotlightEl, options) {
-
-      console.log('setupSpotlight', spotlightEl, options);
-
-      // add the `.md-spotlight-spotlight` to the DOM
-      options.parent.append(spotlightEl);
-      console.log('added spotlightEl to dom');
-
-      options.spotlightEl = spotlightEl;
-    }
-
     /**
      * Utility function to filter out raw DOM nodes
      */
@@ -622,9 +218,275 @@ function MdSpotlightProvider($$interimElementProvider) {
         return true;
       }
     }
+
+    // MODIFIED CODE BELOW
+    var currentTarget = void 0,
+        nextTarget = void 0,
+        spotlightEl = void 0;
+
+    /** Show method for dialogs */
+    function onShow(scope, element, options, controller) {
+
+      captureParentAndFromToElements(options);
+      showBackdrop(scope, element, options);
+      setupSpotlight(element, options);
+      activateListeners(element, options);
+
+      // TODO aria -- configureAria(element.find('md-dialog'), options);
+
+      nextTarget = getSpotlightTarget(options.group, 'next');
+
+      moveSpotlightToNextTarget(element, options);
+
+      return animateFromOrigin(element, options);
+      // .then(function() {
+
+      //   // TODO perhaps here should be where highlight index goes
+      //   // TODO locking screen reader
+      //   // TODO focus on open
+
+      // });
+    }
+
+    function endSpotlight(options) {
+
+      options.deactivateListeners();
+
+      // TODO animate removing the backdrop?
+      options.hideBackdrop(options.$destroy);
+
+      return options.reverseAnimate().then(function () {
+        currentTarget = null;
+        nextTarget = null;
+        // spotlightEl.remove();
+      });
+    }
+
+    function setupSpotlight(spotlightEl, options) {
+
+      // tell the entire html body that spotlight is showing for css overrides
+      angular.element($document[0].body).addClass('md-spotlight-is-showing');
+
+      // add the spotlight to the DOM
+      options.parent.append(spotlightEl);
+
+      // save reference to the new spotlightElement
+      spotlightEl = spotlightEl;
+    }
+
+    function getSpotlightTarget(group, direction) {
+
+      var nextTarget = void 0;
+
+      // get all group elements into an array
+      var groupEls = document.querySelectorAll('[md-spotlight="' + group + '"]');
+      var groupElsArray = $mdUtil.nodesToArray(groupEls);
+
+      // sort lowest to highest `md-spotlight-index`
+      groupElsArray.sort(function (a, b) {
+        return a.getAttribute('md-spotlight-index') > b.getAttribute('md-spotlight-index');
+      });
+
+      if (!currentTarget) {
+        nextTarget = angular.element(groupElsArray[0]);
+      } else {
+
+        var nextIndex = groupElsArray.indexOf(currentTarget[0]) + (direction === 'prev' ? -1 : 1);
+
+        if (nextIndex >= groupElsArray.length || nextIndex < 0) {
+          nextTarget = null;
+        } else {
+          nextTarget = angular.element(groupElsArray[nextIndex]);
+        }
+      }
+
+      return nextTarget;
+    }
+
+    function moveSpotlightToNextTarget(spotlightEl, options) {
+
+      // tell the current target that the spotlight aint no longer on'em
+      currentTarget && currentTarget.removeClass('md-spotlight-shining');
+
+      if (!nextTarget) {
+        return endSpotlight(options);
+      }
+
+      // tell the next target the spotlight shining on'em
+      nextTarget && nextTarget.addClass('md-spotlight-shining');
+
+      // use css animations on and set the new boundaries for the spotlight
+      var nextTargetBounds = getBoundingClientRect(nextTarget);
+      spotlightEl.css({
+        top: nextTargetBounds.bounds.top - PADDING + 'px',
+        bottom: nextTargetBounds.bounds.bottom + PADDING + 'px',
+        left: nextTargetBounds.bounds.left - PADDING + 'px',
+        right: nextTargetBounds.bounds.right + PADDING + 'px',
+        height: nextTargetBounds.bounds.height + PADDING + PADDING + 'px',
+        width: nextTargetBounds.bounds.width + PADDING + PADDING + 'px'
+      });
+
+      currentTarget = nextTarget;
+    }
+
+    function animateFromOrigin(spotlightEl, options) {
+
+      var animator = $mdUtil.dom.animator;
+      var buildTranslateToOrigin = animator.calculateZoomToOrigin;
+      var translateOptions = { transitionInClass: 'md-transition-in', transitionOutClass: 'md-transition-out' };
+
+      var from = animator.toTransformCss(buildTranslateToOrigin(spotlightEl, options.openFrom || options.origin));
+      var to = animator.toTransformCss(""); // defaults to center display (or parent or $rootElement)
+
+      console.log('from', from);
+      console.log('to', to);
+
+      currentTarget = nextTarget;
+
+      // TODO save animation promise to cancel?
+
+      return animator.translate3d(spotlightEl, from, to, translateOptions).then(function (animateReversal) {
+
+        // Build a reversal translate function synched to this translation...
+        options.reverseAnimate = function () {
+
+          // TODO fix closing to 0,0
+
+          delete options.reverseAnimate;
+
+          if (options.closeTo) {
+            // Using the opposite classes to create a close animation to the closeTo element
+            translateOptions = { transitionInClass: 'md-transition-out', transitionOutClass: 'md-transition-in' };
+            from = to;
+            to = animator.toTransformCss(buildTranslateToOrigin(currentTarget, options.closeTo));
+
+            return animator.translate3d(currentTarget, from, to, translateOptions);
+          }
+
+          return animateReversal(animator.toTransformCss(buildTranslateToOrigin(currentTarget, options.origin)));
+        };
+        return true;
+      });
+    }
+
+    // TODO later
+
+
+    /**
+     * Listen for escape keys and outside clicks to auto close
+     */
+    function activateListeners(element, options) {
+
+      console.log('activate listeners');
+
+      var window = angular.element($window);
+      var onWindowResize = $mdUtil.debounce(function () {
+        // TODO move spotlight to calculated container offset (stay at same index)
+        console.log('TODO onWindowResize');
+      }, 60);
+
+      var removeListeners = [];
+
+      var parentTarget = options.parent;
+      var keyHandlerFn = function keyHandlerFn(ev) {
+
+        if ([$mdConstant.KEY_CODE.ESCAPE, $mdConstant.KEY_CODE.LEFT_ARROW, $mdConstant.KEY_CODE.RIGHT_ARROW].indexOf(ev.keyCode) > -1) {
+          ev.stopPropagation();
+          ev.preventDefault();
+        }
+
+        if (ev.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
+          return endSpotlight(options);
+        } else if (ev.keyCode === $mdConstant.KEY_CODE.LEFT_ARROW) {
+          nextTarget = getSpotlightTarget(options.group, 'prev');
+          moveSpotlightToNextTarget(element, options);
+        } else if (ev.keyCode === $mdConstant.KEY_CODE.RIGHT_ARROW) {
+          nextTarget = getSpotlightTarget(options.group, 'next');
+          moveSpotlightToNextTarget(element, options);
+        }
+      };
+
+      // Add keydown listeners
+      element.on('keydown', keyHandlerFn);
+      parentTarget.on('keydown', keyHandlerFn);
+
+      // Queue remove listeners function
+      removeListeners.push(function () {
+
+        element.off('keydown', keyHandlerFn);
+        parentTarget.off('keydown', keyHandlerFn);
+      });
+
+      // Register listener to update dialog on window resize
+      window.on('resize', onWindowResize);
+      removeListeners.push(function () {
+        window.off('resize', onWindowResize);
+      });
+
+      // Attach specific `remove` listener handler
+      options.deactivateListeners = function () {
+        removeListeners.forEach(function (removeFn) {
+          removeFn();
+        });
+        options.deactivateListeners = null;
+      };
+    }
+
+    /**
+     * Remove function for all dialogs
+     */
+    function onRemove(scope, element, options) {
+
+      options.hideBackdrop && options.hideBackdrop(options.$destroy);
+
+      // Remove the focus traps that we added earlier for keeping focus within the dialog.
+      if (topFocusTrap && topFocusTrap.parentNode) {
+        topFocusTrap.parentNode.removeChild(topFocusTrap);
+      }
+
+      if (bottomFocusTrap && bottomFocusTrap.parentNode) {
+        bottomFocusTrap.parentNode.removeChild(bottomFocusTrap);
+      }
+
+      // For navigation $destroy events, do a quick, non-animated removal,
+      // but for normal closes (from clicks, etc) animate the removal
+      return !!options.$destroy ? detachAndClean() : animateRemoval().then(detachAndClean);
+
+      /**
+       * For normal closes, animate the removal.
+       * For forced closes (like $destroy events), skip the animations
+       */
+      function animateRemoval() {
+        return dialogPopOut(element, options);
+      }
+
+      /**
+       * Detach the element
+       */
+      function detachAndClean() {
+        angular.element($document[0].body).removeClass('md-spotlight-is-showing');
+        element.remove();
+
+        if (!options.$destroy) options.origin.focus();
+      }
+    }
   }
 }
 
-},{}]},{},[1])
+module.exports = MdSpotlightProvider;
+
+},{}],3:[function(require,module,exports){
+'use strict';
+
+var MdSpotlightDirective = require('./md-spotlight-directive');
+var MdSpotlightProvider = require('./md-spotlight-provider');
+
+/**
+ * @ngdoc module
+ * @name material.spotlight
+ */
+angular.module('md.spotlight', ['material.core', 'material.components.backdrop']).directive('mdSpotlight', MdSpotlightDirective).provider('$mdSpotlight', MdSpotlightProvider);
+
+},{"./md-spotlight-directive":1,"./md-spotlight-provider":2}]},{},[3])
 
 //# sourceMappingURL=md-spotlight.js.map

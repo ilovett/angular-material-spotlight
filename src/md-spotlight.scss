@@ -8,9 +8,26 @@
     z-index: initial;
   }
 
-  md-backdrop.md-opaque {
-    opacity: .85;
+}
+
+md-backdrop.md-spotlight-backdrop.md-opaque {
+
+  opacity: .69;
+
+  &.ng-enter {
+    opacity: 0;
   }
+  &.ng-enter.md-opaque.ng-enter-active {
+    opacity: .69;
+  }
+  &.ng-leave {
+    opacity: .69;
+    // transition: opacity 400ms;
+  }
+  &.ng-leave.md-opaque.ng-leave-active {
+    opacity: 0;
+  }
+
 }
 
 [md-spotlight].md-spotlight-shining {
@@ -20,15 +37,15 @@
 
 .md-spotlight-spotlight {
 
-  &._md-transition-in {
+  &.md-transition-in {
     opacity: 1;
     transition: $swift-ease-out;
     transform: translate(0,0) scale(1.0);
   }
-  &._md-transition-out {
+  &.md-transition-out {
     opacity: 0;
     transition: $swift-ease-out;
-    transform: translate(0,100%) scale(0.2);
+    transform: translate(0,0) scale(0);
   }
 
   position: fixed;
