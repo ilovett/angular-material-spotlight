@@ -407,8 +407,7 @@ function MdSpotlightProvider($$interimElementProvider) {
     function activateListeners(element, options) {
       var window = angular.element($window);
       var onWindowResize = $mdUtil.debounce(function() {
-        // TODO spotlightify
-        stretchDialogContainerToViewport(element, options);
+        moveSpotlightToNextTarget(spotlightEl, options);
       }, 60);
 
       var removeListeners = [];
