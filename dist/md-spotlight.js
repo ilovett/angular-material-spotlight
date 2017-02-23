@@ -34,7 +34,7 @@ function MdSpotlightProvider($$interimElementProvider) {
   var topFocusTrap, bottomFocusTrap;
 
   return $$interimElementProvider('$mdSpotlight').setDefaults({
-    methods: ['disableParentScroll', 'targetEvent', 'closeTo', 'openFrom', 'focusOnOpen', 'parent'],
+    methods: ['disableParentScroll', 'escapeToClose', 'targetEvent', 'closeTo', 'openFrom', 'focusOnOpen', 'parent'],
     options: dialogDefaultOptions
   });
 
@@ -45,6 +45,7 @@ function MdSpotlightProvider($$interimElementProvider) {
       isolateScope: true,
       onShow: onShow,
       onRemove: onRemove,
+      escapeToClose: true,
       targetEvent: null,
       closeTo: null,
       openFrom: null,
@@ -244,25 +245,8 @@ function MdSpotlightProvider($$interimElementProvider) {
     }
 
     function endSpotlight(options) {
-
-      options.deactivateListeners();
-
-      // TODO animate out toward origin and remove spotlight tip container
-      spotlightTipContainerEl && $animate.leave(spotlightTipContainerEl);
-
-      options.hideBackdrop(options.$destroy);
-
-      var promise = options.reverseAnimate ? options.reverseAnimate() : $q.when();
-
-      return promise.then(function () {
-
-        // reset targets
-        currentTarget = null;
-        nextTarget = null;
-
-        // remove the spotlight element
-        spotlightEl && spotlightEl.remove();
-      });
+      // hide the spotlight, this will trigger `onRemove`
+      $mdUtil.nextTick($mdSpotlight.hide, true);
     }
 
     function setupSpotlight(element, options) {
@@ -415,46 +399,66 @@ function MdSpotlightProvider($$interimElementProvider) {
      * Listen for escape keys and outside clicks to auto close
      */
     function activateListeners(element, options) {
-
       var window = angular.element($window);
       var onWindowResize = $mdUtil.debounce(function () {
-        // TODO move spotlight to calculated container offset (stay at same index)
+        // TODO spotlightify
+        stretchDialogContainerToViewport(element, options);
       }, 60);
 
       var removeListeners = [];
 
       var parentTarget = options.parent;
-      var keyHandlerFn = function keyHandlerFn(ev) {
 
-        if ([$mdConstant.KEY_CODE.ESCAPE, $mdConstant.KEY_CODE.LEFT_ARROW, $mdConstant.KEY_CODE.RIGHT_ARROW].indexOf(ev.keyCode) > -1) {
+      // OPTION -- escapeToClose
+      if (options.escapeToClose) {
+
+        var keyHandlerFn = function keyHandlerFn(ev) {
+          if (ev.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
+            ev.stopPropagation();
+            ev.preventDefault();
+            endSpotlight(options);
+          }
+        };
+
+        // Add keydown listeners
+        element.on('keydown', keyHandlerFn);
+        parentTarget.on('keydown', keyHandlerFn);
+
+        // Queue remove listeners function
+        removeListeners.push(function () {
+          element.off('keydown', keyHandlerFn);
+          parentTarget.off('keydown', keyHandlerFn);
+        });
+      }
+
+      // LEFT/RIGHT navigation
+      var keyHandlerLeftRightFn = function keyHandlerLeftRightFn(ev) {
+        if (ev.keyCode === $mdConstant.KEY_CODE.LEFT_ARROW) {
           ev.stopPropagation();
           ev.preventDefault();
-        }
-
-        if (ev.keyCode === $mdConstant.KEY_CODE.ESCAPE) {
-          return endSpotlight(options);
-        } else if (ev.keyCode === $mdConstant.KEY_CODE.LEFT_ARROW) {
           nextTarget = getSpotlightTarget(options.group, 'prev');
           moveSpotlightToNextTarget(element, options);
         } else if (ev.keyCode === $mdConstant.KEY_CODE.RIGHT_ARROW) {
+          ev.stopPropagation();
+          ev.preventDefault();
           nextTarget = getSpotlightTarget(options.group, 'next');
           moveSpotlightToNextTarget(element, options);
         }
       };
 
       // Add keydown listeners
-      element.on('keydown', keyHandlerFn);
-      parentTarget.on('keydown', keyHandlerFn);
+      element.on('keydown', keyHandlerLeftRightFn);
+      parentTarget.on('keydown', keyHandlerLeftRightFn);
 
       // Queue remove listeners function
       removeListeners.push(function () {
-
-        element.off('keydown', keyHandlerFn);
-        parentTarget.off('keydown', keyHandlerFn);
+        element.off('keydown', keyHandlerLeftRightFn);
+        parentTarget.off('keydown', keyHandlerLeftRightFn);
       });
 
       // Register listener to update dialog on window resize
       window.on('resize', onWindowResize);
+
       removeListeners.push(function () {
         window.off('resize', onWindowResize);
       });
@@ -473,7 +477,13 @@ function MdSpotlightProvider($$interimElementProvider) {
      */
     function onRemove(scope, element, options) {
 
-      options.hideBackdrop && options.hideBackdrop(options.$destroy);
+      options.deactivateListeners();
+      // TODO screen reader locking stuff
+      // options.unlockScreenReader();
+      options.hideBackdrop(options.$destroy);
+
+      // animate the tip container toward origin and remove spotlight tip container
+      spotlightTipContainerEl && $animate.leave(spotlightTipContainerEl);
 
       // Remove the focus traps that we added earlier for keeping focus within the dialog.
       if (topFocusTrap && topFocusTrap.parentNode) {
@@ -493,7 +503,7 @@ function MdSpotlightProvider($$interimElementProvider) {
        * For forced closes (like $destroy events), skip the animations
        */
       function animateRemoval() {
-        var promise = options.reverseAnimate ? options.reverseAnimate : $q.when();
+        var promise = options.reverseAnimate ? options.reverseAnimate() : $q.when();
         return promise.then(function () {
           if (options.contentElement) {
             // When we use a contentElement, we want the element to be the same as before.
@@ -508,10 +518,15 @@ function MdSpotlightProvider($$interimElementProvider) {
        */
       function detachAndClean() {
 
-        console.log('detatch and clean');
-
+        // tell document spotlight is no longer showing
         angular.element($document[0].body).removeClass('md-spotlight-is-showing');
-        // element.remove();
+
+        // reset targets
+        currentTarget = null;
+        nextTarget = null;
+
+        // remove the spotlight element
+        spotlightEl && spotlightEl.remove();
 
         if (!options.$destroy) options.origin.focus();
       }
