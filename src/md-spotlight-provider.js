@@ -206,25 +206,6 @@ function MdSpotlightProvider($$interimElementProvider) {
       }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // MODIFIED CODE BELOW
     let currentTarget, nextTarget, spotlightEl, spotlightTipContainerEl, spotlightTipContainerParentEl;
 
     /** Show method for dialogs */
@@ -241,14 +222,10 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       moveSpotlightToNextTarget(element, options);
 
-      return animateFromOrigin(element, options);
-        // .then(function() {
-
-        //   // TODO perhaps here should be where highlight index goes
-        //   // TODO locking screen reader
-        //   // TODO focus on open
-
-        // });
+      return animateFromOrigin(element, options).then(() => {
+        // TODO locking screen reader
+        // TODO focus on open
+      });
 
     }
 
@@ -257,13 +234,14 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       options.deactivateListeners();
 
-      // TODO animate out toward origin
+      // TODO animate out toward origin and remove spotlight tip container
       spotlightTipContainerEl && $animate.leave(spotlightTipContainerEl);
 
-      // TODO animate backdrop and transform at same time
       options.hideBackdrop(options.$destroy);
 
-      return options.reverseAnimate().then(function() {
+      const promise = options.reverseAnimate ? options.reverseAnimate() : $q.when();
+
+      return promise.then(() => {
 
         // reset targets
         currentTarget = null;
@@ -441,15 +419,6 @@ function MdSpotlightProvider($$interimElementProvider) {
 
     }
 
-
-
-
-    // TODO later
-
-
-
-
-
     /**
      * Listen for escape keys and outside clicks to auto close
      */
@@ -511,13 +480,6 @@ function MdSpotlightProvider($$interimElementProvider) {
       };
     }
 
-
-
-
-
-
-
-
     /**
      * Remove function for all dialogs
      */
@@ -543,21 +505,30 @@ function MdSpotlightProvider($$interimElementProvider) {
        * For forced closes (like $destroy events), skip the animations
        */
       function animateRemoval() {
-        return dialogPopOut(element, options);
+        const promise = options.reverseAnimate ? options.reverseAnimate : $q.when();
+        return promise.then(function() {
+          if (options.contentElement) {
+            // When we use a contentElement, we want the element to be the same as before.
+            // That means, that we have to clear all the animation properties, like transform.
+            options.clearAnimate();
+          }
+        });
       }
 
       /**
        * Detach the element
        */
       function detachAndClean() {
+
+        console.log('detatch and clean')
+
         angular.element($document[0].body).removeClass('md-spotlight-is-showing');
-        element.remove();
+        // element.remove();
 
         if (!options.$destroy) options.origin.focus();
       }
+
     }
-
-
 
   }
 }
