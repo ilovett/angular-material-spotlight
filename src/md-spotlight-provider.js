@@ -208,7 +208,7 @@ function MdSpotlightProvider($$interimElementProvider) {
       }
     }
 
-    let currentTarget, nextTarget, spotlightEl, spotlightTipContainerEl, spotlightTipContainerParentEl;
+    let currentTarget, nextTarget, spotlightEl, spotlightTipContainerEl, spotlightTipContainerParentEl, spotlightCurrentTipEl;
 
     /** Show method for dialogs */
     function onShow(scope, element, options, controller) {
@@ -351,12 +351,17 @@ function MdSpotlightProvider($$interimElementProvider) {
       const backdrop = options.backdrop;
       const childTip = currentTarget.find('md-spotlight-tip');
 
-      // always clear the content
-      spotlightTipContainerParentEl.html('');
+      // TODO animate toward current target?
+
+      spotlightCurrentTipEl && $animate.leave(spotlightCurrentTipEl);
 
       // if we have a tip to show relevant to the showing tip, show it
       if (childTip.length) {
-        spotlightTipContainerParentEl.append(childTip.clone());
+        spotlightCurrentTipEl = childTip.clone();
+        $animate.enter(spotlightCurrentTipEl, spotlightTipContainerParentEl);
+      }
+      else {
+        spotlightCurrentTipEl = null;
       }
 
     }
@@ -443,13 +448,13 @@ function MdSpotlightProvider($$interimElementProvider) {
           ev.stopPropagation();
           ev.preventDefault();
           nextTarget = getSpotlightTarget(options.group, 'prev');
-          moveSpotlightToNextTarget(element, options);
+          $mdUtil.nextTick(() => moveSpotlightToNextTarget(element, options), true);
         }
         else if (ev.keyCode === $mdConstant.KEY_CODE.RIGHT_ARROW) {
           ev.stopPropagation();
           ev.preventDefault();
           nextTarget = getSpotlightTarget(options.group, 'next');
-          moveSpotlightToNextTarget(element, options);
+          $mdUtil.nextTick(() => moveSpotlightToNextTarget(element, options), true);
         }
       }
 

@@ -69,17 +69,45 @@ md-spotlight-tip {
 
   color: white;
 
-  md-spotlight-tip {
-    display: block;
+  #md-spotlight-tip-parent {
+
+    position: relative;
+
+    > md-spotlight-tip {
+
+      display: block;
+
+      transition: $swift-ease-out;
+
+      &.ng-enter {
+        position: absolute;
+        transform: translate(0,25px);
+        opacity: 0;
+      }
+      &.ng-enter.ng-enter-active {
+        transform: translate(0,0);
+        opacity: 1;
+      }
+      &.ng-leave {
+        position: absolute;
+        transform: translate(0,0) scale(1.0);
+        opacity: 1;
+      }
+      &.ng-leave.ng-leave-active {
+        transform: translate(0,-25px) scale(0.5);
+        opacity: 0;
+      }
+    }
+
   }
 
   transition: $swift-ease-out;
 
   &.ng-enter {
-    color: 0;
+    opacity: 0;
   }
   &.ng-enter.ng-enter-active {
-    color: 1;
+    opacity: 1;
   }
   &.ng-leave {
     opacity: 1;
