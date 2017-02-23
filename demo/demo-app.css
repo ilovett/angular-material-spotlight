@@ -1,3 +1,8 @@
 body, #app {
   height: 100%;
 }
+
+/* future plans would include automatic detection of contrasting color compared to parent container theme */
+md-toolbar .md-spotlight-shining md-icon {
+  color: rgba(0,0,0,0.85);
+}

@@ -3,6 +3,10 @@ angular-material-spotlight
 
 Add a Spotlight Tour to your Angular Material projects.
 
+<p align="center">
+  <img src="demo/demo.gif?raw=true" alt="Angular Material Spotlight Demo"/>
+</p>
+
 ## Requirements
 
 * [AngularJS](https://angularjs.org/)
