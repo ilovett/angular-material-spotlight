@@ -7,6 +7,8 @@ Add a Spotlight Tour to your Angular Material projects.
   <img src="demo/demo.gif?raw=true" alt="Angular Material Spotlight Demo"/>
 </p>
 
+*NOTE: Spotlight is not a legitimate part of the [Material Design Spec](https://material.io/guidelines/), however this component is built on top of [Angular Material](https://material.angularjs.org/), and I feel integrates into the concept of Material Design very well.  If you found it, then good for you!*
+
 ## Requirements
 
 * [AngularJS](https://angularjs.org/)
@@ -24,14 +26,14 @@ Use in Angular:
 
 ```javascript
 angular.module( 'YourApp', [ 'md.spotlight' ] )
-  .controller("YourController", ['$scope, $mdSpotlight', function($scope, $mdSpotlight) {
+  .controller('YourController', ['$scope, $mdSpotlight', function($scope, $mdSpotlight) {
 
-    $scope.help = function($event, group) {
+    this.tour = function(group, $event) {
       return $mdSpotlight.show({
         targetEvent: $event,
-        group: 'add-screen'
+        group: group || 'top-icons'
       });
-    }
+    };
 
   }] );
 ```
@@ -40,41 +42,47 @@ In Angular templates:
 
 ```html
 
-<md-toolbar class="md-whiteframe-z1">
-  <div class="md-toolbar-tools">
+<md-content class="flex layout-column layout-align-space-around-center" ng-controller="YourController as $ctrl">
 
-    <md-button id="btn-filter" class="md-icon-button" aria-label="Filter" ng-click="openFilterDialog($event)"
-      md-spotlight="add-screen"
-      md-spotlight-index=1
-      >
-      <md-icon>filter_list</md-icon>
-      <md-tooltip md-direction="top" md-visible="spotlightIndex == 1">Tooltip when index is 1</md-tooltip>
-    </md-button>
+  <div class="layout-row layout-align-space-around-center" style="width: 100%;">
 
-    <md-button class="md-icon-button" aria-label="Back" ui-sref="new"
-      md-spotlight="add-screen"
-      md-spotlight-index=2
-      >
-      <md-icon>add</md-icon>
-      <md-tooltip md-direction="top" md-visible="spotlightIndex == 2">Tooltip when index is 2</md-tooltip>
-    </md-button>
+    <md-icon md-spotlight="tour-b" md-spotlight-index="3">feedback</md-icon>
 
-    <md-button class="md-icon-button" aria-label="Done" ui-sref="review"
-      md-spotlight="add-screen"
-      md-spotlight-index=3
-      >
-      <md-icon>check</md-icon>
-    </md-button>
+    <md-icon md-spotlight="tour-a" md-spotlight-index="2">grade</md-icon>
 
-    <span flex></span>
+    <md-icon md-spotlight="tour-b" md-spotlight-index="1">
+      favorite
+      <md-spotlight-tip>Mark your favorites here.</md-spotlight-tip>
+    </md-icon>
 
-    <md-button class="md-icon-button" aria-label="Help" ng-click="help($event)">
-      <md-icon>help</md-icon>
-    </md-button>
+    <md-icon md-spotlight="tour-a" md-spotlight-index="4">g_translate</md-icon>
 
   </div>
-</md-toolbar>
 
+  <div style="text-align: center;">
+    <md-button class="md-raised md-primary" ng-click="$ctrl.tour('tour-a', $event)">Spotlight Tour A</md-button>
+    <md-button class="md-raised md-accent" ng-click="$ctrl.tour('tour-b', $event)">Spotlight Tour B</md-button>
+  </div>
+
+  <div class="layout-row layout-align-space-around-center" style="width: 100%;">
+
+    <md-icon md-spotlight="tour-b" md-spotlight-index="2">
+      feedback
+      <md-spotlight-tip>Give your feedback here.</md-spotlight-tip>
+    </md-icon>
+
+    <md-icon md-spotlight="tour-a" md-spotlight-index="5">grade</md-icon>
+
+    <md-icon md-spotlight="tour-b" md-spotlight-index="4">
+      delete
+      <md-spotlight-tip>Delete stuff here.</md-spotlight-tip>
+    </md-icon>
+
+    <md-icon md-spotlight="tour-a" md-spotlight-index="3">g_translate</md-icon>
+
+  </div>
+
+</md-content>
 ```
 
 ## Building
