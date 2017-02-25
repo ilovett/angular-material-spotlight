@@ -14,3 +14,5 @@ angular
   ])
   .directive('mdSpotlight', MdSpotlightDirective)
   .provider('$mdSpotlight', MdSpotlightProvider);
+
+module.exports = angular.module('md.spotlight');

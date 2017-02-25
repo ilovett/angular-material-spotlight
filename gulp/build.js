@@ -43,7 +43,8 @@ gulp.task('scripts', function() {
     debug: true,
     cache: {},
     packageCache: {},
-    plugin: ['watchify'],
+    standalone: '$mdSpotlight',
+    plugin: ['browserify-derequire', 'watchify'],
   });
 
   bundler.transform('babelify', {
