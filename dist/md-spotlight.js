@@ -300,7 +300,20 @@ function MdSpotlightProvider($$interimElementProvider) {
 
       // sort lowest to highest `md-spotlight-index`
       groupElsArray.sort(function (a, b) {
-        return a.getAttribute('md-spotlight-index') > b.getAttribute('md-spotlight-index');
+
+        var astr = a.getAttribute('md-spotlight-index');
+        var bstr = b.getAttribute('md-spotlight-index');
+        var aint = parseInt(astr);
+        var bint = parseInt(bstr);
+
+        // if both are integers, compare the int values
+        if (!isNaN(aint) && !isNaN(bint)) {
+          return aint > bint;
+        }
+        // otherwise compare string
+        else {
+            return astr > bstr;
+          }
       });
 
       if (!currentTarget) {

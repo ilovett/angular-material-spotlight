@@ -295,7 +295,23 @@ function MdSpotlightProvider($$interimElementProvider) {
       const groupElsArray = $mdUtil.nodesToArray(groupEls);
 
       // sort lowest to highest `md-spotlight-index`
-      groupElsArray.sort((a, b) => a.getAttribute('md-spotlight-index') > b.getAttribute('md-spotlight-index'));
+      groupElsArray.sort((a, b) => {
+
+        const astr = a.getAttribute('md-spotlight-index');
+        const bstr = b.getAttribute('md-spotlight-index');
+        const aint = parseInt(astr);
+        const bint = parseInt(bstr)
+
+        // if both are integers, compare the int values
+        if ( ! isNaN(aint) && ! isNaN(bint)) {
+          return aint > bint;
+        }
+        // otherwise compare string
+        else {
+          return astr > bstr;
+        }
+
+      });
 
       if ( ! currentTarget) {
         nextTarget = angular.element(groupElsArray[0]);
