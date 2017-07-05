@@ -1,6 +1,6 @@
 {
   "name": "angular-material-spotight",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Add a Spotlight Tour to your Angular Material projects.",
   "main": "index",
   "scripts": {
