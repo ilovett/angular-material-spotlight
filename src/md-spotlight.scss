@@ -72,12 +72,14 @@ md-spotlight-tip {
   #md-spotlight-tip-parent {
 
     position: relative;
+    display: flex;
+    margin: 30px;
 
     > md-spotlight-tip {
 
-      display: block;
-
+      display: flex;
       transition: $swift-ease-out;
+      align-self: center;
 
       &.ng-enter {
         position: absolute;

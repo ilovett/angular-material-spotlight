@@ -279,7 +279,7 @@ function MdSpotlightProvider($$interimElementProvider) {
       };
 
       // create and add the tooltip container
-      var html = '\n        <div class="md-spotlight-tip-container layout-column">\n          <div id="md-spotlight-tip-parent" class="flex layout-column layout-align-center-center"></div>\n          <div id="md-spotlight-tip-actions" class="layout-row layout-align-space-between-center" style="width: 100%; max-width: 600px; margin: 0 auto;">\n            <md-button ng-click="prev()">Prev</md-button>\n            <md-button ng-click="skip()">Skip</md-button>\n            <md-button ng-click="next()">Next</md-button>\n          </div>\n        </div>\n      ';
+      var html = '\n        <div class="md-spotlight-tip-container layout-column">\n          <div id="md-spotlight-tip-parent" class="flex"></div>\n          <div id="md-spotlight-tip-actions" class="layout-row layout-align-space-between-center" style="width: 100%; max-width: 600px; margin: 0 auto;">\n            <md-button ng-click="prev()">Prev</md-button>\n            <md-button ng-click="skip()">Skip</md-button>\n            <md-button ng-click="next()">Next</md-button>\n          </div>\n        </div>\n      ';
 
       spotlightTipContainerEl = $compile(html)($scope);
 
