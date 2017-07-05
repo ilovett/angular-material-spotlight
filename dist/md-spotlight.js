@@ -363,9 +363,14 @@ function MdSpotlightProvider($$interimElementProvider) {
     function showSpotlightTips(options) {
 
       var backdrop = options.backdrop;
-      var childTip = currentTarget.find('md-spotlight-tip');
+      var children = currentTarget.find('md-spotlight-tip');
 
-      // TODO animate toward current target?
+      // take the last child tip found
+      var childTip = angular.element(children[children.length - 1]);
+
+      // TODO future improvements
+      // sort by depth and take the first one
+      // map to a specific id / template if provided
 
       spotlightCurrentTipEl && $animate.leave(spotlightCurrentTipEl);
 
